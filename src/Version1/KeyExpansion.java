@@ -43,14 +43,23 @@ public class KeyExpansion {
     public KeyExpansion(){
     }
 
-    public int[] generateNextRoundKey(String key, int roundNo){
+    public int[][] generateAlleRoundkeys(String key, int rounds){
+        int[][] result = new int[rounds][16];
         int[] keyInHex = this.keyToHex(key);
 
+        for(int i = 0; i< 10; i++){
+            // TODO
+        }
+
+        return result;
+    }
+
+    public int[] generateNextRoundKey(int[] key, int roundNo){
         // Split the Hex-Key into 4 blocks of 4 chars
         int[][] w = new int[8][4];
         for(int i = 0; i<4;i++){
             for(int j = 0; j<4;j++){
-                w[i][j] = keyInHex[i*4+j];
+                w[i][j] = key[i*4+j];
             }
         }
 
