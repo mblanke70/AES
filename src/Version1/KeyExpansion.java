@@ -1,6 +1,7 @@
 package Version1;
 
 public class KeyExpansion {
+
     private String key = "Thats my Kung Fu";
 
     private static int[][] s_box = {
@@ -41,19 +42,37 @@ public class KeyExpansion {
     };
 
     public KeyExpansion(){
+        //
+        // int[][] res = this.generateAlleRoundkeys(this.key, 10);
+
+        // for(int[] r : res){
+        //     outToHex(r);
+        // }
     }
 
+    /**
+     * Generate all 10 roundkeys
+     * Always use the key generated in the last round, to generate the next one
+     * @return An Array containing all the roundkeys from round 0 to the given number of rounds.
+     * Each key consists of 16 numbers in an array of length 16
+     */
     public int[][] generateAlleRoundkeys(String key, int rounds){
-        int[][] result = new int[rounds][16];
-        int[] keyInHex = this.keyToHex(key);
+        int[][] result = new int[rounds+1][16];
+        result[0] = this.keyToHex(key);
 
-        for(int i = 0; i< 10; i++){
-            // TODO
+        for(int i = 1; i<10+1; i++){
+            result[i] = this.generateNextRoundKey(result[i-1], i-1);
         }
 
         return result;
     }
 
+    /**
+     * generate the next Roundkey with the alorithm from the AES.pdf
+     * 1. Split key into 4 blocks
+     * 2. XOR-Functions
+     * 3. Combine results to get a new key
+     */
     public int[] generateNextRoundKey(int[] key, int roundNo){
         // Split the Hex-Key into 4 blocks of 4 chars
         int[][] w = new int[8][4];
@@ -82,6 +101,12 @@ public class KeyExpansion {
         return result;
     }
 
+    /**
+     * g-function as described in the Document
+     * 1. circular left shift
+     * 2. Byte substitution with S-Box
+     * 3. Adding round Constant (XOR)
+     */
     private int[] g(int[] subkey, int roundNo){
         // circular left shift
         int first = subkey[0];
@@ -95,13 +120,16 @@ public class KeyExpansion {
             subkey[i] = this.substituteWithS_Box(subkey[i]);
         }
 
-        // Adding round Constant
+        // Adding round Constant (XOR)
         // Subtracting 1 from the first element
         subkey = XOR_Array(subkey, this.roundConstants[roundNo]);
 
         return subkey;
     }
 
+    /**
+     * Combine two integer arrays, by XORing the corresponding entries
+     */
     private static int[] XOR_Array(int[] a, int[] b){
         if(a.length != b.length) throw new RuntimeException("a and b have to be the same length");
         int[] result = new int[a.length];
@@ -113,14 +141,19 @@ public class KeyExpansion {
         return result;
     }
 
+    /**
+     * Find the corresponding value of the input number in the s-box
+     */
     private int substituteWithS_Box(int bytes){
-        // Convert the HexNumber into coordinates and find the corresponding value in the s-box
-        int y = bytes / 16;
-        int x = bytes % 16;
+        int y = bytes / 16; // to get the first four bits (first letter in the hexadecimal representation)
+        int x = bytes % 16; // to get the last four bits (second letter in the hexadecimal representation)
 
         return s_box[y][x];
     }
 
+    /**
+     * Convert the String reresentation into Numbers using ASCII chars
+     */
     private int[] keyToHex(String key){
         int[] result = new int[key.length()];
 
@@ -131,12 +164,15 @@ public class KeyExpansion {
         return result;
     }
 
+    /**
+     * Print out the integer array representing the key in hexadecimal numbers, to compare it with the example in the document.
+     */
     private static void outToHex(int[] i){
         for(int n : i) System.out.print(Integer.toHexString(n) + " ");
         System.out.println();
     }
 
     public static void main(String[] args){
-        new AES();
+        new KeyExpansion();
     }
 }
